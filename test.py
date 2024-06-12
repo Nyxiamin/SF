@@ -1,30 +1,7 @@
-# %%
 import pandas as pd
 
 # %%
 df = pd.read_csv("../EFREI - LIPSTIP - 50k elements EPO.csv")
-
-# %%
-print(df.info())
-print(df.head())
-
-# %%
-print(df)
-
-# %%
-print((df.isnull().sum() / len(df)) * 100)
-# il n'y a pas de valeur null
-
-# %%
-columns = ["Numéro d'application", "Date d'application", "Numero de publication", "date de publication", "IPC"]
-df_cleaned = df.drop(columns, axis=1)
-print(df_cleaned.head())
-
-# %%
-df_cleaned.to_csv('../EFREI_LIPSTIP_50k_elements_EPO_clean.csv', sep=',', index=False, encoding='utf-8')
-
-# %%
-print(df_cleaned['description'][0])
 
 
 # %%
@@ -41,7 +18,7 @@ def findFirstOccurrence(string, textSearch):
 
 
 # %%
-text = df_cleaned['description'][0]
+text = df['description'][0]
 indexStartBalise = findFirstOccurrence(text, "<")
 indexEndBalise = findFirstOccurrence(text, ">")
 
@@ -50,19 +27,22 @@ indexEndBalise = findFirstOccurrence(text, ">")
 def suppBetweenIndices(string, startIndex, endIndex):
     if startIndex < 0 or endIndex >= len(string) or startIndex > endIndex:
         return string
-    return string[:startIndex] + string[endIndex:]
+    return string[:startIndex] + string[endIndex+1:]
 
 
 # %%
 def suppEveryBalise(string):
     indexStartBalise = findFirstOccurrence(string, '<')
     indexEndBalise = findFirstOccurrence(string, '>')
-    while indexStartBalise != None:
-        if indexStartBalise < indexEndBalise:
-            indexStartBalise = 0
+    while indexStartBalise != -1:
+        indexsStartBalise = findOccurrences(string[indexStartBalise-1:indexEndBalise], '<')
+        indexsEndBalise = findOccurrences(string[indexStartBalise-1:indexEndBalise], '>')
+        if(len(indexsStartBalise) != len(indexsEndBalise)):
+            indexStartBalise = indexsStartBalise[0]
         string = suppBetweenIndices(string, indexStartBalise, indexEndBalise)
         indexStartBalise = findFirstOccurrence(string, '<')
         indexEndBalise = findFirstOccurrence(string, '>')
+    return string
 
 
 # %%
@@ -72,3 +52,6 @@ print(newText)
 
 # %%
 print(suppEveryBalise(text))
+
+# %%
+print(text)
