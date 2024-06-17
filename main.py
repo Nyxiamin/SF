@@ -1,5 +1,6 @@
 # %%
 import pandas as pd
+from functionCleanXML import suppEveryBalise
 
 # %%
 df = pd.read_csv("../EFREI - LIPSTIP - 50k elements EPO.csv")
@@ -21,54 +22,8 @@ df_cleaned = df.drop(columns, axis=1)
 print(df_cleaned.head())
 
 # %%
-df_cleaned.to_csv('../EFREI_LIPSTIP_50k_elements_EPO_clean.csv', sep=',', index=False, encoding='utf-8')
-
-# %%
-print(df_cleaned['description'][0])
-
-
-# %%
-def findOccurrences(string, textSearch):
-    import re
-    indices = [match.start() for match in re.finditer(re.escape(textSearch), string)]
-    return indices
-
-
-# %%
-def findFirstOccurrence(string, textSearch):
-    index = string.find(textSearch)
-    return index
-
+# df_cleaned.to_csv('../EFREI_LIPSTIP_50k_elements_EPO_clean.csv', sep=',', index=False, encoding='utf-8')
 
 # %%
 text = df_cleaned['description'][0]
-indexStartBalise = findFirstOccurrence(text, "<")
-indexEndBalise = findFirstOccurrence(text, ">")
-
-
-# %%
-def suppBetweenIndices(string, startIndex, endIndex):
-    if startIndex < 0 or endIndex >= len(string) or startIndex > endIndex:
-        return string
-    return string[:startIndex] + string[endIndex:]
-
-
-# %%
-def suppEveryBalise(string):
-    indexStartBalise = findFirstOccurrence(string, '<')
-    indexEndBalise = findFirstOccurrence(string, '>')
-    while indexStartBalise != None:
-        if indexStartBalise < indexEndBalise:
-            indexStartBalise = 0
-        string = suppBetweenIndices(string, indexStartBalise, indexEndBalise)
-        indexStartBalise = findFirstOccurrence(string, '<')
-        indexEndBalise = findFirstOccurrence(string, '>')
-
-
-# %%
-newText = text[:]
-newText = suppBetweenIndices(text, indexStartBalise, indexEndBalise)
-print(newText)
-
-# %%
-print(suppEveryBalise(text))
+print("\n\nDescription de la première ligne clean:\n", suppEveryBalise(text))
