@@ -1,5 +1,6 @@
 # %%
 import pandas as pd
+from functionCleanXML import suppEveryBalise
 
 # %%
 df = pd.read_csv("../EFREI - LIPSTIP - 50k elements EPO.csv")
@@ -20,5 +21,9 @@ columns = ["Numéro d'application", "Date d'application", "Numero de publication
 df_cleaned = df.drop(columns, axis=1)
 print(df_cleaned.head())
 
-#%%
-df_cleaned.to_csv('EFREI_LIPSTIP_50k_elements_EPO_clean.csv', sep=',', index=False, encoding='utf-8')
+# %%
+# df_cleaned.to_csv('../EFREI_LIPSTIP_50k_elements_EPO_clean.csv', sep=',', index=False, encoding='utf-8')
+
+# %%
+text = df_cleaned['description'][0]
+print("\n\nDescription de la première ligne clean:\n", suppEveryBalise(text))
