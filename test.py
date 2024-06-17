@@ -18,7 +18,7 @@ def findFirstOccurrence(string, textSearch):
 
 
 # %%
-text = df['description'][0]
+text = df['claim'][0]
 indexStartBalise = findFirstOccurrence(text, "<")
 indexEndBalise = findFirstOccurrence(text, ">")
 
@@ -27,21 +27,39 @@ indexEndBalise = findFirstOccurrence(text, ">")
 def suppBetweenIndices(string, startIndex, endIndex):
     if startIndex < 0 or endIndex >= len(string) or startIndex > endIndex:
         return string
-    return string[:startIndex] + string[endIndex+1:]
+    return string[:startIndex] + string[endIndex + 1:]
+
+
+# %%
+def findSmallestBalise(string):
+    i = 1
+    indexStartBalise = findFirstOccurrence(string, '<')
+    indexEndBalise = findFirstOccurrence(string, '>')
+
+    newString = string[indexStartBalise + i:indexEndBalise]
+    smallestStartBalise = findFirstOccurrence(newString, '<')
+    smallestEndBalise = findFirstOccurrence(newString, '>')
+
+    while ((smallestStartBalise != -1) or (smallestEndBalise != -1)):
+        if smallestStartBalise != -1:
+            indexStartBalise = smallestStartBalise
+            i += 1
+        if smallestEndBalise != -1:
+            indexEndBalise = smallestEndBalise
+
+        newString = string[indexStartBalise + i:indexEndBalise]
+        smallestStartBalise = findFirstOccurrence(newString, '<')
+        smallestEndBalise = findFirstOccurrence(newString, '<')
+
+    return indexStartBalise, indexEndBalise
 
 
 # %%
 def suppEveryBalise(string):
-    indexStartBalise = findFirstOccurrence(string, '<')
-    indexEndBalise = findFirstOccurrence(string, '>')
+    indexStartBalise, indexEndBalise = findSmallestBalise(string)
     while indexStartBalise != -1:
-        indexsStartBalise = findOccurrences(string[indexStartBalise-1:indexEndBalise], '<')
-        indexsEndBalise = findOccurrences(string[indexStartBalise-1:indexEndBalise], '>')
-        if(len(indexsStartBalise) != len(indexsEndBalise)):
-            indexStartBalise = indexsStartBalise[0]
         string = suppBetweenIndices(string, indexStartBalise, indexEndBalise)
-        indexStartBalise = findFirstOccurrence(string, '<')
-        indexEndBalise = findFirstOccurrence(string, '>')
+        indexStartBalise, indexEndBalise = findSmallestBalise(string)
     return string
 
 
