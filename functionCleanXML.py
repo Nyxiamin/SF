@@ -13,26 +13,25 @@ def suppBetweenIndices(string, startIndex, endIndex):
 
 # %%
 def findSmallestBalise(string):
-    i = 1
-    indexStartBalise = findFirstOccurrence(string, '<')
-    indexEndBalise = findFirstOccurrence(string, '>')
+    smallestIndexStart = -1
+    smallestIndexEnd = -1
+    smallestSize = float('inf')
 
-    newString = string[indexStartBalise + i:indexEndBalise]
-    smallestStartBalise = findFirstOccurrence(newString, '<')
-    smallestEndBalise = findFirstOccurrence(newString, '>')
+    indexStartBalise = string.find('<')
+    while indexStartBalise != -1:
+        indexEndBalise = string.find('>', indexStartBalise)
+        if indexEndBalise == -1:
+            break
+        baliseContent = string[indexStartBalise + 1:indexEndBalise].strip()
+        baliseSize = len(baliseContent)
+        if baliseSize < smallestSize:
+            smallestSize = baliseSize
+            smallestIndexStart = indexStartBalise
+            smallestIndexEnd = indexEndBalise
+        indexStartBalise = string.find('<', indexEndBalise + 1)
 
-    while ((smallestStartBalise != -1) or (smallestEndBalise != -1)):
-        if smallestStartBalise != -1:
-            indexStartBalise += smallestStartBalise
-            i += 1
-        if smallestEndBalise != -1:
-            indexEndBalise += smallestEndBalise
+    return smallestIndexStart, smallestIndexEnd
 
-        newString = string[indexStartBalise + i:indexEndBalise]
-        smallestStartBalise = findFirstOccurrence(newString, '<')
-        smallestEndBalise = findFirstOccurrence(newString, '<')
-
-    return indexStartBalise, indexEndBalise
 
 
 # %%

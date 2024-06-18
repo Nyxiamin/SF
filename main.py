@@ -8,17 +8,17 @@ from sklearn.metrics.pairwise import cosine_similarity
 from functionCleanXML import suppEveryBalise
 from functionImportantWords import get_document_vector, get_most_important_words
 from functionDataFrame import readDataframe, createdCleanCSV
+from functionKNN import KNN
 
 # %%
 df_cleaned = readDataframe()
 createdCleanCSV(df_cleaned)
 
-# %%
-text = df_cleaned['description'][0]
-print("\n\nDescription de la première ligne clean:\n", suppEveryBalise(text))
+#%%
+KNN(df_cleaned)
 
-# %%
 
+#%%
 text_data = [suppEveryBalise(text) for text in df_cleaned['description'].iloc[:3]]
 # Preprocess the text data
 processed_text = [simple_preprocess(doc) for doc in text_data]
@@ -35,8 +35,3 @@ most_important_words = get_most_important_words(combined_doc_vector, model)
 print("Most important words:")
 for word, similarity in most_important_words:
     print(f"{word}: {similarity}")
-
-# %%
-text_data
-
-# %%
