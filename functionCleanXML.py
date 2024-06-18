@@ -8,7 +8,7 @@ def findFirstOccurrence(string, textSearch):
 def suppBetweenIndices(string, startIndex, endIndex):
     if startIndex < 0 or endIndex >= len(string) or startIndex > endIndex:
         return string
-    return string[:startIndex] + string[endIndex + 1:]
+    return string[:startIndex] + ' ' + string[endIndex + 1:]
 
 
 # %%
