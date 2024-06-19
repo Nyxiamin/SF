@@ -15,7 +15,7 @@ df_cleaned = readDataframe()
 createdCleanCSV(df_cleaned)
 
 #%%
-KNN(df_cleaned)
+#KNN(df_cleaned)
 
 
 #%%
