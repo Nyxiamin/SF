@@ -4,19 +4,35 @@ from gensim.utils import simple_preprocess
 import numpy as np
 from collections import Counter
 from sklearn.metrics.pairwise import cosine_similarity
+import random
 
 from functionCleanXML import suppEveryBalise
 from functionImportantWords import get_document_vector, get_most_important_words
 from functionDataFrame import readDataframe, createdCleanCSV
 from functionKNN import KNN
+from functionTXT import transform_to_txt, lire_fichier_txt
 
 # %%
 df_cleaned = readDataframe()
 createdCleanCSV(df_cleaned)
 
 #%%
-KNN(df_cleaned)
+filenames = []
+codes_to_find = []
+# Loop pour créer 50 fichiers textes aléatoires contenant des descriptions (nécessaire pour le KNN suivant, mais attention ça crée beaucoup de fichiers)
+for i in range(1, 51):
+    random_id = random.randint(0, 49999)
+    filename = f"element_{i}.txt"
+    codes = transform_to_txt(df_cleaned, filename, random_id)
+    print(f"Fichier {filename} créé pour l'ID {random_id}")
+    filenames.append(filename)
+    codes_to_find.append(codes)
 
+print(filenames)
+print(codes_to_find)
+
+#%%
+KNN(df_cleaned, filenames, codes_to_find)
 
 #%%
 text_data = [suppEveryBalise(text) for text in df_cleaned['description'].iloc[:3]]
