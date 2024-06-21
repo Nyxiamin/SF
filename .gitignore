@@ -2,3 +2,10 @@
 similarity_index_comb
 tfidf_model_comb
 scipy-env/Lib/site-packages/win32/lib/__pycache__/pywin32_bootstrap.cpython-310.pyc
+similarity_index
+similarity_index.index.data.npy
+similarity_index.index.indices.npy
+similarity_index.index.indptr.npy
+similarity_index.index.npy
+tfidf_model
+dictionary

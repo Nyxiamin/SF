@@ -57,7 +57,15 @@ def functiontest(df_cleaned):
 
     # Apply document vector conversion with progress bar
     tqdm.pandas(desc="Vectorizing Documents")
-    df_cleaned['vector'] = df_cleaned['combined_processed_bigrams'].progress_apply(document_vector)
+    # Fonction pour découper les textes longs en morceaux
+    def preprocess_long_text(text):
+        max_chunk_length = 1000000  # Limite maximale de longueur par morceau
+        chunks = [text[i:i+max_chunk_length] for i in range(0, len(text), max_chunk_length)]
+        processed_chunks = [preprocess(chunk) for chunk in chunks]
+        return sum(processed_chunks, [])  # Concaténer les listes de résultats
+
+    # Appliquer le prétraitement aux textes longs
+    df_cleaned['combined_processed'] = df_cleaned['combined'].progress_apply(preprocess_long_text)
 
     # Prepare the data
     X = np.vstack(df_cleaned['vector'].values)
