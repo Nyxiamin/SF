@@ -11,10 +11,13 @@ from functionImportantWords import get_document_vector, get_most_important_words
 from functionDataFrame import readDataframe, createdCleanCSV
 from functionKNN import KNN
 from functionTXT import transform_to_txt, lire_fichier_txt
-
+from regression_models import logistic_regression_classification
 # %%
 df_cleaned = readDataframe()
 createdCleanCSV(df_cleaned)
+
+#%%
+df_cleaned.head()    
 
 #%%
 filenames = []
@@ -35,6 +38,8 @@ print(codes_to_find)
 KNN(df_cleaned, filenames, codes_to_find)
 
 #%%
+logistic_regression_classification(df_cleaned, filenames, codes_to_find)
+#%%
 text_data = [suppEveryBalise(text) for text in df_cleaned['description'].iloc[:3]]
 # Preprocess the text data
 processed_text = [simple_preprocess(doc) for doc in text_data]
@@ -51,3 +56,4 @@ most_important_words = get_most_important_words(combined_doc_vector, model)
 print("Most important words:")
 for word, similarity in most_important_words:
     print(f"{word}: {similarity}")
+# %%
