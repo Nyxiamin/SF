@@ -8,7 +8,7 @@ import random
 from functionCleanXML import suppEveryBalise
 from functionImportantWords import get_document_vector, get_most_important_words
 from functionDataFrame import readDataframe, createdCleanCSV
-from functionKNNcomb import KNNcomb
+from functionKNN import KNN
 from functionTXT import transform_to_txt, lire_fichier_txt
 from functiontest import functiontest
 
@@ -30,7 +30,7 @@ for i in range(1, 101):
     codes_to_find.append(codes)
 
 #%%
-KNNcomb(df_cleaned, filenames, codes_to_find)
+KNN(df_cleaned, filenames, codes_to_find)
 
 #%%
 functiontest(df_cleaned)
