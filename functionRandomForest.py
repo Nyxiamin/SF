@@ -1,31 +1,66 @@
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
-from gensim import corpora, models, similarities
+from gensim import corpora, models
 import pandas as pd
 
+from sklearn.linear_model import LogisticRegression
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics import precision_score, recall_score, f1_score
+import ast
+import numpy as np
 
-def randomForest(df, textToAnalyze):
-    tfidf = models.TfidfModel.load('tfidf_model')
-    dictionary = corpora.Dictionary.load('dictionary')
 
-    textToAnalyze = textToAnalyze.lower()
-    listToAnalyze = textToAnalyze.split()
+def randomForest(df_cleaned, filenames, codes_to_find):
+    # Créer une liste de documents et des étiquettes associées
+    documents = []
+    CPC = []
+    for i, filename in enumerate(filenames):
+        with open(filename, "r", encoding="utf-8") as f:
+            documents.append(f.read())
+        CPC.append(codes_to_find[i])
 
-    corpusToAnalyze = dictionary.doc2bow(listToAnalyze)
-    vectorToAnalyze = tfidf[corpusToAnalyze]
+    # Vectorisation des documents avec TF-IDF
+    vectorizer = TfidfVectorizer()
+    X = vectorizer.fit_transform(df_cleaned['description'])
 
-    tfidf_dict = dict(vectorToAnalyze)
-    df_tfidf = pd.DataFrame([tfidf_dict])
-    df_tfidf = df_tfidf.fillna(0)
+    # Création des étiquettes binaires pour chaque lettre unique dans les CPC codes
+    all_letters = sorted(set(letter for letters in CPC for letter in letters))
+    y = []
+    for CPC_set in CPC:
+        y.append([1 if letter in CPC_set else 0 for letter in all_letters])
+    y = np.array(y)
 
-    X = df.drop('CPC', axis=1)
-    y = df['CPC']
+    # Entraînement du modèle de régression logistique pour chaque lettre
+    models = []
+    for i in range(len(all_letters)):
+        y_i = y[:, i]
+        model = LogisticRegression()
+        model.fit(X, y_i)
+        models.append(model)
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+    y_true_global = []
+    y_pred_global = []
 
-    rf_clf = RandomForestClassifier(n_estimators=100, random_state=42)
+    for i, doc in enumerate(documents):
+        X_test = vectorizer.transform([doc])
+        y_true = y[i]
+        y_pred = [model.predict(X_test)[0] for model in models]
 
-    rf_clf.fit(X_train, y_train)
+        y_true_global.extend(y_true)
+        y_pred_global.extend(y_pred)
 
-    y_pred = rf_clf.predict(df_tfidf)
-    return y_pred[0]
+        # Print results for each query document
+        print(f"Query Document: {filenames[i]}")
+        print(f"Query First Letters: {codes_to_find[i]}")
+        similar_first_letters = {all_letters[idx] for idx, pred in enumerate(y_pred) if pred == 1}
+        print(f"Similar First Letters: {similar_first_letters}")
+        print()
+
+    # Calculate global precision, recall, and F1 score
+    precision = precision_score(y_true_global, y_pred_global)
+    recall = recall_score(y_true_global, y_pred_global)
+    f1 = f1_score(y_true_global, y_pred_global)
+
+    print(f"Global Precision: {precision:.4f}")
+    print(f"Global Recall: {recall:.4f}")
+    print(f"Global F1 Score: {f1:.4f}")
