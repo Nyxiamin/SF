@@ -12,10 +12,12 @@ from functionDataFrame import readDataframe, createdCleanCSV
 from functionKNN import KNN
 from functionTXT import transform_to_txt, lire_fichier_txt
 from functionRandomForest import randomForest
+from functionDFbow import modify_df_bow
+import pandas as pd
 
 # %%
 df_cleaned = readDataframe()
-#createdCleanCSV(df_cleaned)
+# createdCleanCSV(df_cleaned)
 print("df enregistrer")
 # %%
 filenames = []
@@ -35,12 +37,17 @@ print(codes_to_find)
 # %%
 # KNN(df_cleaned, filenames, codes_to_find)
 
-# %%
-print("Random forest : ")
-randomForest(df_cleaned, filenames, codes_to_find)
 
 # %%
-text_data = [suppEveryBalise(text) for text in df_cleaned['description'].iloc[:3]]
+df_bow = modify_df_bow()
+
+# %%
+if df_bow is not None:
+    print("Random forest : ")
+    randomForest(df_bow, filenames, codes_to_find)
+
+# %%
+"""text_data = [suppEveryBalise(text) for text in df_cleaned['description'].iloc[:3]]
 # Preprocess the text data
 processed_text = [simple_preprocess(doc) for doc in text_data]
 
@@ -56,3 +63,4 @@ most_important_words = get_most_important_words(combined_doc_vector, model)
 print("Most important words:")
 for word, similarity in most_important_words:
     print(f"{word}: {similarity}")
+"""

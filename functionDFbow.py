@@ -3,7 +3,8 @@ from gensim import corpora
 from gensim.utils import simple_preprocess
 from collections import defaultdict
 from tqdm import tqdm
-from functionDataFrame import readDataframe
+import ast
+from pathlib import Path
 
 
 def preprocess_text(text):
@@ -32,6 +33,24 @@ def create_bow(df):
     df['bow'] = bows
     return df, dictionary
 
-def modify_df_bow(df_bow):
-    df_bow.drop([['description'], ['claim']], axis=1, inplace=True)
-    
+
+def str_to_list(str_list):
+    return ast.literal_eval(str_list)
+
+
+def list_to_first_char_set(cpc_list):
+    return set(item[0] for item in cpc_list)
+
+
+def modify_df_bow():
+    file_path = Path("../EFREI_LIPSTIP_50k_elements_EPO_bow.csv")
+    if file_path.is_file():
+        df_bow = pd.read_csv('../EFREI_LIPSTIP_50k_elements_EPO_bow.csv')
+
+        df_bow.drop([['description'], ['claim']], axis=1, inplace=True)
+
+        df_bow['CPC'] = df_bow['CPC'].apply(str_to_list)
+        df_bow['CPC'] = df_bow['CPC'].apply(list_to_first_char_set)
+
+        return df_bow
+    return None

@@ -78,10 +78,3 @@ def randomForest(df, filenames, codes_to_find):
     print(f"Global Precision: {precision:.4f}")
     print(f"Global Recall: {recall:.4f}")
     print(f"Global F1 Score: {f1:.4f}")
-
-# Exemple d'utilisation de la fonction
-df = pd.read_csv('../EFREI_LIPSTIP_50k_elements_EPO_bow.csv')
-filenames = ['file1.txt', 'file2.txt', 'file3.txt']  # Remplacer par les noms de fichiers réels
-codes_to_find = [['A61K'], ['B65D'], ['C07D']]  # Remplacer par les CPC réels correspondants
-
-randomForest(df, filenames, codes_to_find)
