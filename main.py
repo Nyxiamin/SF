@@ -15,8 +15,8 @@ from functionRandomForest import randomForest
 
 # %%
 df_cleaned = readDataframe()
-createdCleanCSV(df_cleaned)
-
+#createdCleanCSV(df_cleaned)
+print("df enregistrer")
 # %%
 filenames = []
 codes_to_find = []
@@ -36,6 +36,7 @@ print(codes_to_find)
 # KNN(df_cleaned, filenames, codes_to_find)
 
 # %%
+print("Random forest : ")
 randomForest(df_cleaned, filenames, codes_to_find)
 
 # %%
