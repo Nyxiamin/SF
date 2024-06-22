@@ -21,6 +21,9 @@ def create_bow(df):
     # Filter out words that occur in less than 5 documents, or more than 50% of the documents
     dictionary.filter_extremes(no_below=5, no_above=0.5)
 
+    # Save the dictionary
+    dictionary.save('df_bow_dict')
+
     # Create the bag-of-words representation of the documents
     corpus = [dictionary.doc2bow(text) for text in tqdm(texts, desc="Creating BoW representation")]
 

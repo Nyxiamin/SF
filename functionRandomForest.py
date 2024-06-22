@@ -16,7 +16,7 @@ def text_to_bow(text, dictionary):
 
 def randomForest(df, filenames, codes_to_find):
     # Charger le dictionnaire existant
-    dictionary = corpora.Dictionary.load('dictionary')
+    dictionary = corpora.Dictionary.load('df_bow_dict')
 
     # Supprimer les lignes où la colonne 'bow' est vide
     df = df[df['bow'].map(bool)]
