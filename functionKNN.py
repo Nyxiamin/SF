@@ -1,13 +1,13 @@
-def KNNcomb(df_cleaned, filenames, codes_to_find): 
+def KNN(df_cleaned, filenames, codes_to_find): 
     from gensim import corpora, models, similarities, utils
     import ast
     from collections import Counter
     from sklearn.metrics import precision_score, recall_score, f1_score
 
     # Load the TF-IDF model and similarity index
-    tfidf = models.TfidfModel.load('tfidf_model_comb')  # Ensure 'tfidf_model' file exists
-    index = similarities.SparseMatrixSimilarity.load('similarity_index_comb')  # Ensure 'similarity_index' file exists
-    dictionary = corpora.Dictionary.load('dictionary_comb')
+    tfidf = models.TfidfModel.load('tfidf_model')  # Ensure 'tfidf_model' file exists
+    index = similarities.SparseMatrixSimilarity.load('similarity_index')  # Ensure 'similarity_index' file exists
+    dictionary = corpora.Dictionary.load('dictionary')
 
     empty_similar_first_letters_count = 0
     y_true_global = []

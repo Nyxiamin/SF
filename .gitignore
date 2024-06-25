@@ -9,3 +9,9 @@ similarity_index.index.indptr.npy
 similarity_index.index.npy
 tfidf_model
 dictionary
+/scipy-env
+/scipy-env
+/scipy-env/Lib
+/scipy-env/Lib/site-packages/pip/_internal
+scipy-env/Lib/site-packages/pip/_internal/__pycache__/cache.cpython-310.pyc
+*.pyc
