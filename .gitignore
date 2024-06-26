@@ -2,3 +2,4 @@
 /scipy-env
 similarity_index.index.data.npy
 similarity_index.index.indices.npy
+/__pycache__
