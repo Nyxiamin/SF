@@ -19,10 +19,20 @@ import ast
 from sklearn.metrics import f1_score
 from sklearn.metrics.pairwise import cosine_similarity
 from tqdm import tqdm
+import pandas as pd
 
 # %%
 df_cleaned = readDataframe()
 createdCleanCSV(df_cleaned)
+
+#%%
+
+df = pd.read_csv("../EFREI_LIPSTIP_50k_elements_EPO_important.csv")
+print(df.head())
+
+
+
+
 #%%
 #==== Fonction de création de fichiers ====
 
@@ -42,7 +52,7 @@ KNN(df_cleaned, filenames, codes_to_find)
 
 #%%
 # Appeler functiontest avec cette copie indépendante
-functiontest(df_cleaned)
+functiontest(df)
 
 
 #%%
@@ -62,17 +72,16 @@ def preprocess(text):
     return [token.lemma_ for token in doc if not token.is_stop and token.is_alpha]
 
 # Function to preprocess a new element
-def preprocess_new_element(description, claim):
-    combined = description + " " + claim
+def preprocess_new_element(combined):
     processed_text = preprocess(combined)
     bigrams_text = bigram[processed_text]
     vector = np.mean([word2vec_model.wv[word] for word in bigrams_text if word in word2vec_model.wv], axis=0)
     return vector
 
 # Function to predict CPC codes for a new element
-def predict_cpc_codes(description, claim):
+def predict_cpc_codes(important_words):
     # Preprocess new element
-    vector = preprocess_new_element(description, claim).reshape(1, -1)
+    vector = preprocess_new_element(important_words).reshape(1, -1)
     
     # Predict CPC codes
     prediction_probabilities = best_clf.predict_proba(vector)
@@ -94,14 +103,17 @@ def calculate_f1_score(df_cleaned, predict_function, num_samples=100):
     for i in range(num_samples):
         print(i)
         random_id = random.randint(0, len(df_cleaned) - 1)
-        new_description = df_cleaned["description"][random_id]
-        new_claim = df_cleaned["claim"][random_id]
+        new_imp_words = df_cleaned["important_words_tfidf_saved"][random_id]
         
         # Predict CPC codes
-        predicted_cpc_codes = predict_function(new_description, new_claim)
+        predicted_cpc_codes = predict_function(new_imp_words)
         
         # Collect true codes
         cpc_codes_str = df_cleaned['CPC'][random_id]
+        if isinstance(cpc_codes_str, str):
+            cpc_codes = ast.literal_eval(cpc_codes_str)
+        else:
+            cpc_codes = cpc_codes_str
         cpc_codes = ast.literal_eval(cpc_codes_str)
         true_codes = set(code[0] for code in cpc_codes)  # Convert to list of strings
         
@@ -131,67 +143,64 @@ def calculate_f1_score(df_cleaned, predict_function, num_samples=100):
     print(f"F1 score: {f1}")
 
 # Example usage
-calculate_f1_score(df_cleaned, predict_cpc_codes, num_samples=100)
+calculate_f1_score(df, predict_cpc_codes, num_samples=100)
 
 #%%
 
 
+from gensim import corpora, models, similarities
 
+# Fonction pour extraire les mots importants à partir du modèle TF-IDF chargé
+def extract_important_words_tfidf_saved_model(text_data, tfidf_model, similarity_index, dictionary, top_n=5):
+    important_words = []
+    
+    for text in tqdm(text_data, desc="Extracting important words"):
+        # Prétraitement du texte
+        processed_text = simple_preprocess(text)
+        
+        # Conversion en vecteur TF-IDF
+        vec_bow = dictionary.doc2bow(processed_text)
+        vec_tfidf = tfidf_model[vec_bow]
+        
+        # Tri des mots par importance TF-IDF
+        sorted_tfidf = sorted(vec_tfidf, key=lambda x: x[1], reverse=True)
+        
+        # Sélection des top_n mots les plus importants
+        top_words = []
+        for word_index, score in sorted_tfidf[:top_n]:
+            top_words.append(dictionary[word_index])
+        
+        important_words.append(' '.join(top_words))
+    
+    return important_words
 
+tfidf = models.TfidfModel.load('tfidf_model')  # Ensure 'tfidf_model' file exists
+index = similarities.SparseMatrixSimilarity.load('similarity_index')  # Ensure 'similarity_index' file exists
+dictionary = corpora.Dictionary.load('dictionary')
 
+# Extraction des mots importants avec les modèles chargés
+text_data = df_cleaned['combined'].tolist()
+important_words_tfidf_saved = extract_important_words_tfidf_saved_model(text_data, tfidf, index, dictionary)
 
-def get_document_vector(document, model):
-    # Fonction pour obtenir le vecteur du document
-    doc_vector = [model.wv[word] for word in document if word in model.wv]
-    return sum(doc_vector) / len(doc_vector) if doc_vector else np.zeros(model.vector_size)
+# Ajout des mots importants à votre dataframe
+df_cleaned['important_words_tfidf_saved'] = important_words_tfidf_saved
+# Supprimer les colonnes 'claim' et 'description'
+df_cleaned.drop(['claim', 'description'], axis=1, inplace=True)
 
-def get_most_important_words(document_vector, model, top_n=5):
-    # Fonction pour obtenir les mots les plus importants
-    word_similarities = {}
-    for word in model.wv.index_to_key:
-        word_vector = model.wv[word].reshape(1, -1)
-        similarity = cosine_similarity(document_vector, word_vector)[0][0]
-        word_similarities[word] = similarity
-    most_important_words = sorted(word_similarities.items(), key=lambda item: item[1], reverse=True)[:top_n]
-    return most_important_words
+# Enregistrement du dataframe mis à jour dans un fichier CSV
+df_cleaned.to_csv('../EFREI_LIPSTIP_50k_elements_EPO_important.csv', sep=',', index=False, encoding='utf-8')
 
-# Combinaison des colonnes 'description' et 'claim' avec tqdm pour suivre l'avancement
-tqdm.pandas(desc="Combinaison des colonnes")
-df_cleaned['combined'] = df_cleaned.progress_apply(lambda row: f"{suppEveryBalise(row['description'])} {suppEveryBalise(row['claim'])}", axis=1)
+#%%
 
-# Transformation du texte en tokens avec tqdm
-text_data = df_cleaned['combined'].progress_apply(simple_preprocess)
+# Fonction pour combiner les colonnes "description" et "claim"
+def combine_columns(row):
+    return f"{row['description']} {row['claim']}"
 
-# Entraînement du modèle FastText avec tqdm
-model = FastText(vector_size=100, window=3, min_count=1, sg=1)
-model.build_vocab(sentences=text_data)
-model.train(sentences=tqdm(text_data, desc="Entraînement du modèle"), total_examples=len(text_data), epochs=10)
+# Création de la colonne combinée en appliquant la fonction à chaque ligne
+df_cleaned['combined'] = df_cleaned.apply(combine_columns, axis=1)
 
-# Fonction pour extraire les mots importants pour chaque description combinée
-def extract_important_words(text, model):
-    processed_text = simple_preprocess(text)
-    document_vector = get_document_vector(processed_text, model).reshape(1, -1)
-    important_words = get_most_important_words(document_vector, model, top_n=2)
-    return ' '.join([word for word, similarity in important_words])
-
-# Application de la fonction sur chaque description combinée avec tqdm
-tqdm.pandas(desc="Extraction des mots importants")
-df_cleaned['important_words'] = df_cleaned['combined'].progress_apply(lambda x: extract_important_words(x, model))
-
-# Affichage des premières lignes du dataframe avec les mots importants
-print(df_cleaned[['combined', 'important_words']].head())
-
-
-
-
-
-
-
-
-
-
-
-
+# Affichage des premières lignes pour vérifier
+print(df_cleaned[['description', 'claim', 'combined']].head())
 
 
 #%%

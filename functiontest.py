@@ -1,4 +1,3 @@
-import pandas as pd
 import spacy
 from tqdm import tqdm
 from gensim.models import Phrases, Word2Vec
@@ -7,7 +6,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import classification_report
 from sklearn.preprocessing import LabelEncoder
-from joblib import dump, load
+from joblib import dump
+from sklearn.model_selection import train_test_split
 import ast
 
 def preprocess(text):
@@ -26,19 +26,22 @@ def apply_bigrams(doc):
     bigram = Phrases.load('bigrams_model')
     return bigram[doc]
 
-def document_vector(doc):
-    word2vec_model = Word2Vec.load('word2vec_model')
-    return np.mean([word2vec_model.wv[word] for word in doc if word in word2vec_model.wv], axis=0)
+def document_vector(doc, word2vec_model):
+    # Calculate the mean vector for the document
+    vectors = [word2vec_model.wv[word] for word in doc if word in word2vec_model.wv]
+    if vectors:
+        return np.mean(vectors, axis=0)
+    else:
+        # Return a zero vector if no words in the doc are in the model's vocabulary
+        return np.zeros(word2vec_model.vector_size)
 
 def functiontest(df_cleaned):
     df_cleaned['CPC'] = df_cleaned['CPC'].apply(ast.literal_eval)
 
     nlp = spacy.load('en_core_web_sm')
 
-    df_cleaned['combined'] = df_cleaned['description'] + " " + df_cleaned['claim']
-
     tqdm.pandas(desc="Preprocessing Text")
-    df_cleaned['combined_processed'] = df_cleaned['combined'].progress_apply(preprocess_long_text)
+    df_cleaned['combined_processed'] = df_cleaned['important_words_tfidf_saved'].progress_apply(preprocess_long_text)
 
     sentences = df_cleaned['combined_processed'].tolist()
     bigram = Phrases(sentences, min_count=5, threshold=100)
@@ -52,7 +55,15 @@ def functiontest(df_cleaned):
     word2vec_model.save('word2vec_model')
 
     tqdm.pandas(desc="Vectorizing Documents")
-    df_cleaned['vector'] = df_cleaned['combined_processed_bigrams'].progress_apply(document_vector)
+    df_cleaned['vector'] = df_cleaned['combined_processed_bigrams'].progress_apply(lambda doc: document_vector(doc, word2vec_model))
+
+    # Debugging step: Check dimensions of each vector
+    vector_lengths = df_cleaned['vector'].apply(lambda x: len(x))
+    print("Vector lengths:", vector_lengths.unique())
+
+    # Ensure all vectors have the correct length
+    expected_vector_size = word2vec_model.vector_size
+    df_cleaned['vector'] = df_cleaned['vector'].apply(lambda x: x if len(x) == expected_vector_size else np.zeros(expected_vector_size))
 
     df_cleaned['CPC_first_letter'] = df_cleaned['CPC'].apply(lambda x: x[0][0])
 
@@ -61,15 +72,15 @@ def functiontest(df_cleaned):
     dump(le, 'label_encoder.pkl')
 
     X = np.vstack(df_cleaned['vector'].values)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    """
-    train_indices = X_train.index
-    test_indices = X_test.index
+    # Retain indices to track training and testing split
+    indices = np.arange(len(X))
+    X_train, X_test, y_train, y_test, train_indices, test_indices = train_test_split(X, y, indices, test_size=0.2, random_state=42)
+
+    # Save the indices
     np.save('train_indices.npy', train_indices)
     np.save('test_indices.npy', test_indices)
-    """
-    
+
     clf = RandomForestClassifier(random_state=42)
 
     param_grid = {
