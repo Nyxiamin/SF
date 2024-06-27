@@ -21,8 +21,6 @@ def createdDisplay():
             st.write(description)
         else:
             st.write("Veuillez insérer un fichier ou bien un texte")
-        else:
-            readTXT(entered_text)
 
 
 def readFile(uploaded_file):
