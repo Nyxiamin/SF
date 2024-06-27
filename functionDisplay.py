@@ -7,11 +7,11 @@ df = pd.read_csv("../EFREI_LIPSTIP_50k_elements_EPO_clean.csv", sep=',', encodin
 
 def createdDisplay():
     global df
-    st.write("Projet LIPSTIP - EFREI")
-    st.write("veuillez soit inséérer un fichier ou bien copier coller votre texte dans la zone de texte")
-    uploaded_file = st.file_uploader("Uploader votre fichier", type=["csv"])
+    st.write("# Projet LIPSTIP - EFREI")
+    st.write("veuillez insérer un fichier PDF ou copier coller votre texte dans la zone de texte")
+    uploaded_file = st.file_uploader("Uploader votre fichier", type=["pdf"])
     entered_text = st.text_area("Entrez votre texte ici")
-    if st.button("Lancer l'analyse"):
+    if st.button("Soumettre"):
         if uploaded_file is not None and entered_text is not None:
             st.write("Veuillez insérer soit un fichier ou bien un texte, pas les deux")
         elif uploaded_file is not None:
@@ -21,17 +21,15 @@ def createdDisplay():
             
         else:
             st.write("Veuillez insérer un fichier ou bien un texte")
-            
-    if st.button("Afficher le dataframe"):
-        st.write(df.head())
     return
 
-    
+
 
 def readFile(file):
     pass
 
 def readText(text):
     pass
+
 if __name__ == "__main__":
     createdDisplay()
