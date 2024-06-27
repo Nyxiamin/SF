@@ -50,10 +50,12 @@ def modify_df_bow():
     if file_path.is_file():
         df_bow = pd.read_csv('../EFREI_LIPSTIP_50k_elements_EPO_bow.csv')
 
-        df_bow.drop([['description'], ['claim']], axis=1, inplace=True)
+        columns = ["claim", "description"]
+        df_bow = df_bow.drop(columns, axis=1)
 
         df_bow['CPC'] = df_bow['CPC'].apply(str_to_list)
         df_bow['CPC'] = df_bow['CPC'].apply(list_to_first_char_set)
 
+        df_bow.to_csv('../EFREI_LIPSTIP_50k_elements_EPO_bow.csv', sep=',', index=False, encoding='utf-8')
         return df_bow
     return None

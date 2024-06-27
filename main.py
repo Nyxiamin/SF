@@ -39,7 +39,7 @@ print(codes_to_find)
 
 
 # %%
-df_bow = modify_df_bow()
+df_bow = pd.read_csv('../EFREI_LIPSTIP_50k_elements_EPO_bow.csv')
 
 # %%
 if df_bow is not None:
