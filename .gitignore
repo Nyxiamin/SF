@@ -3,3 +3,14 @@
 similarity_index.index.data.npy
 similarity_index.index.indices.npy
 /__pycache__
+KNNmodel/dictionary
+KNNmodel/similarity_index
+KNNmodel/similarity_index.index.indptr.npy
+KNNmodel/similarity_index.index.npy
+KNNmodel/tfidf_model
+Randomforest/bigrams_model
+Randomforest/label_encoder.pkl
+Randomforest/random_forest_model.joblib
+Randomforest/test_indices.npy
+Randomforest/train_indices.npy
+Randomforest/word2vec_model
