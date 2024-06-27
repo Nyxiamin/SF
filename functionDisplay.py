@@ -9,23 +9,26 @@ def createdDisplay():
     global df
     st.write("Projet LIPSTIP - EFREI")
     st.write("veuillez soit insérer un fichier ou bien copier coller votre texte dans la zone de texte")
-    uploaded_file = st.file_uploader("Uploader votre fichier", type=["pdf"])
+    # uploaded_file = st.file_uploader("Uploader votre fichier", type=["pdf"])
     entered_text = st.text_area("Entrez votre texte ici")
     if st.button("Soumettre"):
-        if uploaded_file is not None and entered_text is not None:
+        
+        # À garder si on lis les PDF
+        """if uploaded_file is not None and entered_text is not None:
             st.write("Veuillez insérer soit un fichier ou bien un texte, pas les deux")
         elif uploaded_file is not None:
             st.write("Fichier inséré")
         elif entered_text is not None:
-            st.write(entered_text)
-            
-        else:
+            st.write(entered_text)"""
+        if entered_text is None:
             st.write("Veuillez insérer un fichier ou bien un texte")
+        else:
+            readTXT(entered_text)
 
-def readFile(file):
+def readPDF(file):
     pass
 
-def readText(text):
+def readTXT(text):
     pass
 
 if __name__ == "__main__":
