@@ -5,7 +5,7 @@ import pytesseract as tess
 
 
 def createdDisplay():
-    st.logo("./image/logo_explain.png")
+    st.logo("./img/logo_explain.png")
     st.title("Projet LIPSTIP - EFREI")
     choice = st.selectbox("Choisissez comment entrer le brevet", ["Analyse de texte", "Analyse de fichier (pdf ou txt)"])
     if choice == "Analyse de texte":
