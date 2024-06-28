@@ -14,3 +14,4 @@ Randomforest/random_forest_model.joblib
 Randomforest/test_indices.npy
 Randomforest/train_indices.npy
 Randomforest/word2vec_model
+brevet_2.pdf

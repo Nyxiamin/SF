@@ -40,7 +40,7 @@ def preprocess_text_important_words(text):
     return tokens
 
 # Fonction pour extraire les mots importants à partir du modèle TF-IDF chargé pour un seul texte
-def extract_important_words_from_text(text, tfidf_model, dictionary, top_n=50):
+def extract_important_words_from_text(text, tfidf_model, dictionary, top_n=500):
     # Prétraitement du texte
     processed_text = preprocess_text_important_words(text)
     
@@ -56,6 +56,12 @@ def extract_important_words_from_text(text, tfidf_model, dictionary, top_n=50):
     for word_index, score in sorted_tfidf[:top_n]:
         top_words.append(dictionary[word_index])
     
+    stop_words = set(stopwords.words('english'))
+    clean_words = []
+    for word in top_words:
+        if word not in stop_words and word != " ":
+            clean_words.append(word)
+
     return ' '.join(top_words)
 
 
@@ -80,7 +86,7 @@ def predict_cpc_codes(important_words):
     prediction_probabilities = best_clf.predict_proba(vector)
 
     # Sort probabilities and get top 1 label
-    top_label_indices = np.argsort(prediction_probabilities, axis=1)[:, ::-1][:, :1].flatten()  # Flattened top 1 label
+    top_label_indices = np.argsort(prediction_probabilities, axis=1)[:, ::-1][:, :3].flatten()  # Flattened top 1 label
 
     # Inverse transform to get original labels
     predicted_labels = le.inverse_transform(top_label_indices.reshape(-1, 1))  # Reshape to (1, 1)
@@ -102,5 +108,7 @@ def functionresult(text,df_cleaned):
     for i in range(len(similar_documents)):
         # Enlever les balises HTML
         similar_documents[i] = re.sub(r'<.*?>', ' ', similar_documents[i])
+    
+    markdown_words = extract_important_words_from_text(text, tfidf, dictionary,20)
 
-    return predicted_cpc_codes, similar_documents, new_imp_words
+    return predicted_cpc_codes, similar_documents, markdown_words

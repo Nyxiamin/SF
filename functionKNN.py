@@ -22,7 +22,7 @@ def KNN(df_cleaned, text):
     sims = index[query_tfidf]
     
     # Sort the similarities and retrieve the top three most similar documents
-    top = sorted(enumerate(sims), key=lambda x: x[1], reverse=True)[:3]
+    top = sorted(enumerate(sims), key=lambda x: x[1], reverse=True)[1:4]
     
     # Retrieve the descriptions of the top three most similar documents
     top_descriptions = [df_cleaned['description'][document_number] for document_number, _ in top]

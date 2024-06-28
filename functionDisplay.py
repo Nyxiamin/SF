@@ -3,12 +3,27 @@ import pandas as pd
 from PIL import Image
 import pytesseract as tess
 import fitz
+import streamlit_scrollable_textbox as stx
+import regex as re
+from annotated_text import annotated_text
+
 
 from functionresult import functionresult
-from functionDataFrame import readDataframe, createdCleanCSV
+
+css_style = """
+<style>
+h1 {
+    color: #52d274;
+}
+h2 {
+    color: #52d274;
+}
+</style>
+"""
 
 
 def createdDisplay(df_cleaned):
+    st.markdown(css_style, unsafe_allow_html=True)
     st.logo("./img/logo_explain.png") #si cette ligne ne fonctionne pas, il faut remplacer logo par image
     st.title("Projet LIPSTIP - EFREI")
     st.write("Ce projet a pour but de prédire les codes CPC d'un brevet et de trouver des documents similaires en fonction de la description du brevet.")
@@ -34,13 +49,21 @@ def createdDisplay(df_cleaned):
             description = None
 
         if description is not None:
-            predicted_cpc, similar_document, new_imp_words = functionresult(description, df_cleaned)
-            st.write_stream("Les codes CPC prédits sont : ", predicted_cpc)
-            st.write_stream("Les documents similaires sont : ", similar_document)
-            st.write_stream("Les mots importants sont : ", new_imp_words)
-            st.write("Fin de l'analyse")
-
-
+            with st.spinner("Analyse en cours..."):
+                predicted_cpc, similar_documents, new_imp_words = functionresult(description, df_cleaned)
+            st.header("Voici les codes CPC prédits")
+            st.subheader("le code le plus probable est : ")
+            st.subheader(predicted_cpc[0])
+            st.subheader("les deux autres codes probables sont : ")
+            for cpc in predicted_cpc[1:]:
+                st.subheader(cpc)
+            st.header("Voici les documents similaires")
+            for similar_document in similar_documents:
+                stx.scrollableTextbox(similar_document, height=250)
+            st.header("Voici les mots importants")
+            highlighted_text = highligh_words(description, new_imp_words)
+            with st.spinner("Mise en évidence des mots importants..."):
+                annotated_text(highlighted_text)
 
 def readFile(uploaded_file):
     '''Fonction pour lire le contenu d'un fichier pdf ou txt et le retourner sous forme de texte'''
@@ -79,10 +102,29 @@ def readPDF(uploaded_file):
                 
     return description
 
+def highligh_words(text, imp_words):
+    '''Fonction pour mettre en évidence les mots importants dans le texte'''
+    text = text.lower()
+    # Enlever les balises HTML
+    text = re.sub(r'<.*?>', '', text)
+    #text = re.sub(r'[^\w\s]', '', text)
+    list_words = text.split()
+    imp_words = imp_words.split()
+    highlighted_text =  []
+    for word in list_words:
+        if word in imp_words:
+            highlighted_text.append((word, "", "#afa"))
+            highlighted_text.append(" ")
+        else:
+            highlighted_text.append(word)
+            highlighted_text.append(" ")
+    return highlighted_text
+
 @st.cache_resource
 def load_data_test():
     return pd.read_csv("../EFREI_LIPSTIP_50k_elements_EPO_clean.csv")
 
 if __name__ == "__main__":
+    st.set_page_config(page_title="Projet LIPSTIP - EFREI", page_icon="./img/logo_explain.png")
     df_test = load_data_test()
     createdDisplay(df_test)
