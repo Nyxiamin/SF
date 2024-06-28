@@ -21,6 +21,15 @@ h2 {
 </style>
 """
 
+dic_relation_lettre_domaine = {'A' : "Human necessities (agriculture, health)",
+                               'B' : "Performing operations & transporting (printing, microstructural tech)",
+                               'C' :  "Chemistry & metallurgy (chemistry, metallurgy)",
+                               'D' : "Textiles & paper (textiles, paper)",
+                               'E' : "Fixed constructions (building, mining)",
+                               'F' : "Mechanical engineering & Lighting & Heating & Weapons & Blasting (lighting, weapons)",
+                               'G' : "Physics (instruments, nucleonics)",
+                               'H' : "Electricity (semiconductors, electric power)",
+                               'Y' : "General tagging of new technological developments"}
 
 def createdDisplay(df_cleaned):
     st.markdown(css_style, unsafe_allow_html=True)
@@ -51,15 +60,24 @@ def createdDisplay(df_cleaned):
         if description is not None:
             with st.spinner("Analyse en cours..."):
                 predicted_cpc, similar_documents, new_imp_words = functionresult(description, df_cleaned)
+            
+            # Affichage des codes CPC probables
             st.header("Voici les codes CPC prédits")
-            st.subheader("le code le plus probable est : ")
-            st.subheader(predicted_cpc[0])
-            st.subheader("les deux autres codes probables sont : ")
-            for cpc in predicted_cpc[1:]:
-                st.subheader(cpc)
+            st.subheader("Le code du brevet le plus probable est : ")
+            st.write(predicted_cpc[0], " correspondant au domaine : ", dic_relation_lettre_domaine[predicted_cpc[0]] )
+            st.subheader("Les deux autres codes du brevet les plus probables sont : ")
+            for i in range(1,len(predicted_cpc)):
+                st.write(predicted_cpc[i], " correspondant au domaine : ", dic_relation_lettre_domaine[predicted_cpc[i]])
+            
+            # Affichage des documents similaires
             st.header("Voici les documents similaires")
             for similar_document in similar_documents:
-                stx.scrollableTextbox(similar_document, height=250)
+                for code in similar_document[1]:
+                    st.write("Le code du document similaire est ", code, ", correspondant au domaine : ", dic_relation_lettre_domaine[code])
+                st.write("Le pourcentage de similarité est de {:.2f}%".format(similar_document[2]))
+                stx.scrollableTextbox(similar_document[0], height=250)
+            
+            # Affichage du texte avec les mots importants surlignés
             st.header("Voici les mots importants")
             highlighted_text = highligh_words(description, new_imp_words)
             with st.spinner("Mise en évidence des mots importants..."):

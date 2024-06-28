@@ -1,4 +1,3 @@
-
 import numpy as np
 import spacy
 import random
@@ -102,12 +101,18 @@ def functionresult(text,df_cleaned):
         predicted_cpc_codes = predict_cpc_codes(new_imp_words)
         pbar.update(1)
 
+    similar_documents = []
     with tqdm(total=1, desc="Finding similar documents") as pbar:
-        similar_documents, _ = KNN(df_cleaned, text)
+        similar_document, similar_code, similar_pourcentage = KNN(df_cleaned, text)
+        for i in range(len(similar_code)):
+            similar_code[i] = ast.literal_eval(similar_code[i])
+            similar_code[i] = list(set(code[0] for code in similar_code[i]))
+        for i in range(len(similar_document)):
+            similar_documents.append([similar_document[i],similar_code[i],similar_pourcentage[i]])
         pbar.update(1)
     for i in range(len(similar_documents)):
         # Enlever les balises HTML
-        similar_documents[i] = re.sub(r'<.*?>', ' ', similar_documents[i])
+        similar_documents[i][0] = re.sub(r'<.*?>', ' ', similar_documents[i][0])
     
     markdown_words = extract_important_words_from_text(text, tfidf, dictionary,20)
 

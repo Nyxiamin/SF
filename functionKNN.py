@@ -27,4 +27,9 @@ def KNN(df_cleaned, text):
     # Retrieve the descriptions of the top three most similar documents
     top_descriptions = [df_cleaned['description'][document_number] for document_number, _ in top]
     top_code = [df_cleaned['CPC'][document_number] for document_number, _ in top]
-    return top_descriptions, top_code
+    top_similarities = [similarity for _, similarity in top]
+    
+    # Convert similarities to percentage
+    top_similarities_percentage = [similarity * 100 for similarity in top_similarities]
+    
+    return top_descriptions, top_code, top_similarities_percentage
