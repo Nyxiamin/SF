@@ -35,96 +35,15 @@ def combine_columns(row):
 # Création de la colonne combinée en appliquant la fonction à chaque ligne
 df_cleaned['combined'] = df_cleaned.apply(combine_columns, axis=1)
 
-#%%
-from gensim import corpora, models
-import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.feature_selection import chi2
-from sklearn.model_selection import train_test_split, cross_val_score
-from sklearn.ensemble import RandomForestClassifier
-import matplotlib.pyplot as plt
-
-
-tfidf = models.TfidfModel.load('KNNmodel\\tfidf_model')
-dictionary = corpora.Dictionary.load('KNNmodel\\dictionary')
-
-# Extract text and labels
-texts = df_cleaned['combined']
-corpus = [dictionary.doc2bow(text.split()) for text in texts]
-tfidf_corpus = [tfidf[doc] for doc in corpus]
-
-# Convert the TF-IDF corpus to a dense matrix
-from gensim.matutils import corpus2dense
-X = corpus2dense(tfidf_corpus, num_terms=len(dictionary)).T
-y = df_cleaned['CPC']
-
-# Rank features by importance using Chi-Squared test
-chi2_scores, _ = chi2(X, y)
-feature_ranking = chi2_scores.argsort()[::-1]
-
-# Split the data
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Initialize variables to store results
-num_features = [5000, 3000, 2000, 1500, 1000, 800, 500, 200]
-cv_scores = []
-
-# Iterate over different numbers of features with tqdm progress bar
-for n in tqdm(num_features, desc="Testing feature sets"):
-    # Reduce the feature set
-    selected_features = feature_ranking[:n]
-    X_train_reduced = X_train[:, selected_features]
-    X_test_reduced = X_test[:, selected_features]
-    
-    # Train the model
-    model = RandomForestClassifier(n_estimators=100, random_state=42)
-    model.fit(X_train_reduced, y_train)
-    
-    # Evaluate using cross-validation
-    scores = cross_val_score(model, X_train_reduced, y_train, cv=5, scoring='accuracy')
-    cv_scores.append(scores.mean())
-
-
-# Plot the results
-plt.plot(num_features, cv_scores, marker='o')
-plt.xlabel('Number of Features')
-plt.ylabel('Cross-Validated Accuracy')
-plt.title('Optimal Number of Features for Random Forest Model')
-plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 #%%
 
-print(df_cleaned.head(1))
-
-predicted_cpc_codes, similar_documents, new_imp_words = functionresult(df_cleaned["combined"][0], df_cleaned)
+predicted_cpc_codes, similar_documents, new_imp_words = functionresult(df_cleaned["combined"][5], df_cleaned)
 
 print(predicted_cpc_codes)
-for text in similar_documents:
-    print(text)
+for element in similar_documents:
+    print(element)
 print(new_imp_words)
 
 
@@ -151,29 +70,15 @@ print(df_cleaned["combined"][0])
 
 #%%
 
-df = pd.read_csv("../EFREI_LIPSTIP_50k_elements_EPO_important.csv")
+df = pd.read_csv("../EFREI_LIPSTIP_50k_elements_EPO_importantV1.csv")
 print(df.head())
 
-#%%
-#==== Fonction de création de fichiers ====
-
-filenames = []
-codes_to_find = []
-# Loop pour créer 100 fichiers textes aléatoires contenant des descriptions (nécessaire pour le KNN suivant, mais attention ça crée beaucoup de fichiers)
-for i in range(1, 101):
-    random_id = random.randint(0, 49999)
-    filename = f"element_{i}.txt"
-    codes = transform_to_txt(df_cleaned, filename, random_id)
-    print(f"Fichier {filename} créé pour l'ID {random_id}")
-    filenames.append(filename)
-    codes_to_find.append(codes)
 
 #%%
-KNN(df_cleaned, filenames, codes_to_find)
-
+df_part = df.head(50).copy()
 #%%
 # Appeler functiontest avec cette copie indépendante
-functiontest(df)
+functiontest(df_part)
 
 
 #%%
@@ -322,7 +227,7 @@ def preprocess_text(text):
     return tokens
 
 # Fonction pour extraire les mots importants à partir du modèle TF-IDF chargé
-def extract_important_words_tfidf_saved_model(text_data, tfidf_model, dictionary, top_n=50):
+def extract_important_words_tfidf_saved_model(text_data, tfidf_model, dictionary, top_n=500):
     important_words = []
     
     for text in tqdm(text_data, desc="Extracting important words"):
@@ -346,8 +251,8 @@ def extract_important_words_tfidf_saved_model(text_data, tfidf_model, dictionary
     return important_words
 
 # Charger les modèles et le dictionnaire
-tfidf = models.TfidfModel.load('tfidf_model')  # Assurez-vous que le fichier 'tfidf_model' existe
-dictionary = corpora.Dictionary.load('dictionary')  # Assurez-vous que le fichier 'dictionary' existe
+tfidf = models.TfidfModel.load('KNNmodel\\tfidf_model')  # Assurez-vous que le fichier 'tfidf_model' existe
+dictionary = corpora.Dictionary.load('KNNmodel\\dictionary')  # Assurez-vous que le fichier 'dictionary' existe
 
 # Extraction des mots importants avec les modèles chargés
 text_data = df_cleaned['combined'].tolist()
@@ -361,10 +266,6 @@ df_cleaned.drop(['claim', 'description'], axis=1, inplace=True)
 
 # Enregistrement du dataframe mis à jour dans un fichier CSV
 df_cleaned.to_csv('../EFREI_LIPSTIP_50k_elements_EPO_important.csv', sep=',', index=False, encoding='utf-8')
-
-
-
-
 
 
 

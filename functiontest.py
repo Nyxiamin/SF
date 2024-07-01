@@ -10,6 +10,7 @@ from joblib import dump
 from sklearn.model_selection import train_test_split
 import ast
 
+
 def preprocess(text):
     nlp = spacy.load('en_core_web_sm')
     doc = nlp(text)
@@ -46,7 +47,6 @@ def functiontest(df_cleaned):
     sentences = df_cleaned['combined_processed'].tolist()
     bigram = Phrases(sentences, min_count=5, threshold=100)
     bigram.save('bigrams_model')
-
     tqdm.pandas(desc="Applying Bigrams")
     df_cleaned['combined_processed_bigrams'] = df_cleaned['combined_processed'].progress_apply(apply_bigrams)
 
@@ -89,8 +89,15 @@ def functiontest(df_cleaned):
         'min_samples_split': [2, 5, 10]
     }
 
-    grid_search = GridSearchCV(clf, param_grid, cv=5, scoring='f1_macro')
-    grid_search.fit(X_train, y_train)
+    # Calculate total number of iterations for tqdm
+    total_iterations = len(param_grid['n_estimators']) * len(param_grid['max_depth']) * len(param_grid['min_samples_split']) * 5
+
+    # Initialize tqdm progress bar
+    with tqdm(total=total_iterations) as pbar:
+        grid_search = GridSearchCV(clf, param_grid, cv=5, scoring='f1_macro')
+        grid_search.fit(X_train, y_train)
+        pbar.update()
+    
     best_clf = grid_search.best_estimator_
 
     y_pred = best_clf.predict(X_test)
