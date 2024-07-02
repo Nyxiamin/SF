@@ -64,18 +64,19 @@ def createdDisplay(df_cleaned):
             # Affichage des codes CPC probables
             st.header("Voici les codes CPC prédits")
             st.subheader("Le code du brevet le plus probable est : ")
-            st.write(predicted_cpc[0], " correspondant au domaine : ", dic_relation_lettre_domaine[predicted_cpc[0]] )
+            st.markdown("**" + predicted_cpc[0] + "**" + " correspondant au domaine : " + dic_relation_lettre_domaine[predicted_cpc[0]] )
             st.subheader("Les deux autres codes du brevet les plus probables sont : ")
             for i in range(1,len(predicted_cpc)):
-                st.write(predicted_cpc[i], " correspondant au domaine : ", dic_relation_lettre_domaine[predicted_cpc[i]])
+                st.write("**" + predicted_cpc[i] + "**" + " correspondant au domaine : " + dic_relation_lettre_domaine[predicted_cpc[i]])
             
             # Affichage des documents similaires
             st.header("Voici les documents similaires")
             for similar_document in similar_documents:
                 for code in similar_document[1]:
-                    st.write("Le code du document similaire est ", code, ", correspondant au domaine : ", dic_relation_lettre_domaine[code])
+                    st.markdown("Le code du document similaire est "+ "**" + code + "**" + ", correspondant au domaine : " + dic_relation_lettre_domaine[code])
                 st.write("Le pourcentage de similarité est de {:.2f}%".format(similar_document[2]))
                 stx.scrollableTextbox(similar_document[0], height=250)
+                st.divider()
             
             # Affichage du texte avec les mots importants surlignés
             st.header("Voici les mots importants")
@@ -133,7 +134,7 @@ def highligh_words(text, imp_words):
         if word in imp_words:
             highlighted_text.append((word, "", "#afa"))
             highlighted_text.append(" ")
-        else:
+        else: 
             highlighted_text.append(word)
             highlighted_text.append(" ")
     return highlighted_text

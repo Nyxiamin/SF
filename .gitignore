@@ -1,4 +1,4 @@
-
+.gitignore
 /scipy-env
 similarity_index.index.data.npy
 similarity_index.index.indices.npy
@@ -15,3 +15,5 @@ Randomforest/test_indices.npy
 Randomforest/train_indices.npy
 Randomforest/word2vec_model
 brevet_2.pdf
+*.gz
+GoogleNews-vectors-negative300.bin/GoogleNews-vectors-negative300.bin
